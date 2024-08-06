@@ -26,7 +26,26 @@ class Student:
 @dataclass
 class Department:
     name: str
+    courses: Dict[int, List[str]] = field(default_factory=dict)    
     students: List[Student] = field(default_factory=list)
+
+
+def generate_courses(department_name: str) -> Dict[int, List[str]]:
+    courses = {}
+    dept_code = department_name[:3].upper()
+    
+    for level in [100, 200, 300, 400]:
+        level_courses = []
+        for semester in [1, 2]:
+            for i in range(1, 4):  # 3 courses per semester
+                course_code = f"{dept_code}{level}{semester}0{i}"
+                level_courses.append(course_code)
+        courses[level] = level_courses
+    
+    if department_name in ["Civil Law", "Criminal Law"]:
+        courses[500] = [f"{dept_code}501", f"{dept_code}502", f"{dept_code}503", f"{dept_code}504", f"{dept_code}505"]
+    
+    return courses
 
 @dataclass
 class Faculty:
@@ -72,6 +91,15 @@ def generate_student(college: College) -> Student:
         level = random.choice([100, 200, 300, 400, 500])
     else:
         level = random.choice([100, 200, 300, 400])
+
+    department_obj = college.get_department(faculty, department)
+    if department_obj and level in department_obj.courses:
+        courses = {course: round(random.uniform(0, 5.0), 2) for course in random.sample(department_obj.courses[level], 5)}
+    else:
+        courses = {}
+    
+    # Calculate GPA
+    gpa = round(sum(courses.values()) / len(courses), 2) if courses else 0.0
     
     return Student(
         student_id=student_id,
@@ -86,7 +114,9 @@ def generate_student(college: College) -> Student:
         phone_number=phone_number,
         state=state,
         LGA=LGA,
-        admission_date=admission_date
+        admission_date=admission_date,
+        gpa=gpa,
+        courses=courses
     )
 
 def initialize_college() -> College:
@@ -103,6 +133,9 @@ def initialize_college() -> College:
     for faculty, departments in faculties.items():
         for department in departments:
             college.add_department(faculty, department)
+            dept = college.get_department(faculty, department)
+            if dept:
+                dept.courses = generate_courses(department)
 
     return college
 
@@ -138,7 +171,9 @@ def print_all_student_data(students: List[Student]) -> None:
         print(f"State: {student.state}")
         print(f"Admission Date: {student.admission_date}")
         print(f"GPA: {student.gpa}")
-        print(f"Courses: {', '.join(student.courses)}")
+        print("Courses and Scores:")
+        for course, score in student.courses.items():
+            print(f"  {course}: {score}")        
         print("-" * 50)
 
 def main() -> None:
