@@ -2,6 +2,8 @@ from typing import List, Dict, Optional
 import random
 from dataclasses import dataclass, field
 from datetime import date, timedelta
+from collections import defaultdict
+from statistics import mean
 
 STUDENT_ID_COUNTER = 210591000
 
@@ -155,6 +157,45 @@ def print_college_statistics(college: College) -> None:
         for dept_name, department in faculty.departments.items():
             print(f"  Department: {dept_name}, Students: {len(department.students)}")
 
+
+def cluster_students_by_department(college: College) -> None:
+    department_clusters = defaultdict(list)
+
+    for faculty in college.faculties.values():
+        for department in faculty.departments.values():
+            for student in department.students:
+                department_clusters[department.name].append(student)
+
+    print("\nDepartment Clusters:")
+    for dept_name, students in department_clusters.items():
+        print(f"\n{'-'*50}")
+        print(f"Department: {dept_name}")
+        print(f"Number of students: {len(students)}")
+        
+        if students:
+            avg_gpa = mean(student.gpa for student in students)
+            print(f"Average GPA: {avg_gpa:.2f}")
+            
+            level_distribution = defaultdict(int)
+            for student in students:
+                level_distribution[student.level] += 1
+            print("Level distribution:")
+            for level, count in sorted(level_distribution.items()):
+                print(f"  Level {level}: {count} students")
+            
+            print("\nSample students:")
+            for i, student in enumerate(random.sample(students, min(3, len(students))), 1):
+                print(f"\n  Student {i}:")
+                print(f"    Name: {student.name}")
+                print(f"    ID: {student.student_id}")
+                print(f"    Level: {student.level}")
+                print(f"    GPA: {student.gpa:.2f}")
+                print("    Courses:")
+                for course, score in student.courses.items():
+                    print(f"      {course}: {score:.2f}")
+        
+        print(f"{'-'*50}")
+
 def print_all_student_data(students: List[Student]) -> None:
     for student in students:
         print(f"\nStudent ID: {student.student_id}")
@@ -188,7 +229,7 @@ def main() -> None:
             college.total_students += 1
             all_students.append(student)
     
-    print_all_student_data(all_students)
+    cluster_students_by_department(college)
 
 if __name__ == "__main__":
     main()
