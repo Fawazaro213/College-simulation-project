@@ -38,7 +38,7 @@ def generate_courses(department_name: str) -> Dict[int, List[str]]:
         level_courses = []
         for semester in [1, 2]:
             for i in range(1, 4):  # 3 courses per semester
-                course_code = f"{dept_code}{level}{semester}0{i}"
+                course_code = f"{dept_code}{i}0{semester}"
                 level_courses.append(course_code)
         courses[level] = level_courses
     
