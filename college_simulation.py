@@ -7,6 +7,7 @@ from statistics import mean
 
 STUDENT_ID_COUNTER = 210591000
 
+
 @dataclass
 class Student:
     student_id: int
@@ -25,17 +26,18 @@ class Student:
     gpa: float = 0.0
     courses: List[str] = field(default_factory=list)
 
+
 @dataclass
 class Department:
     name: str
-    courses: Dict[int, List[str]] = field(default_factory=dict)    
+    courses: Dict[int, List[str]] = field(default_factory=dict)
     students: List[Student] = field(default_factory=list)
 
 
 def generate_courses(department_name: str) -> Dict[int, List[str]]:
     courses = {}
     dept_code = department_name[:3].upper()
-    
+
     for level in [100, 200, 300, 400]:
         level_courses = []
         for semester in [1, 2]:
@@ -43,16 +45,24 @@ def generate_courses(department_name: str) -> Dict[int, List[str]]:
                 course_code = f"{dept_code}{i}0{semester}"
                 level_courses.append(course_code)
         courses[level] = level_courses
-    
+
     if department_name in ["Civil Law", "Criminal Law"]:
-        courses[500] = [f"{dept_code}501", f"{dept_code}502", f"{dept_code}503", f"{dept_code}504", f"{dept_code}505"]
-    
+        courses[500] = [
+            f"{dept_code}501",
+            f"{dept_code}502",
+            f"{dept_code}503",
+            f"{dept_code}504",
+            f"{dept_code}505",
+        ]
+
     return courses
+
 
 @dataclass
 class Faculty:
     name: str
     departments: Dict[str, Department] = field(default_factory=dict)
+
 
 @dataclass
 class College:
@@ -63,30 +73,38 @@ class College:
     def add_department(self, faculty_name: str, department_name: str) -> None:
         if faculty_name not in self.faculties:
             self.faculties[faculty_name] = Faculty(faculty_name)
-        self.faculties[faculty_name].departments[department_name] = Department(department_name)
+        self.faculties[faculty_name].departments[department_name] = Department(
+            department_name)
 
     def get_department(self, faculty_name: str, department_name: str) -> Optional[Department]:
         return self.faculties.get(faculty_name, Faculty(faculty_name)).departments.get(department_name)
+
 
 def generate_student(college: College) -> Student:
     global STUDENT_ID_COUNTER
     STUDENT_ID_COUNTER += 1
     student_id = STUDENT_ID_COUNTER
 
-    names = ["Fawaz", "Samuel", "Chidera", "David", "Emmanuel", "Feranmi", "Grace", "Zainab", "Deborah", "Faith"]
-    surnames = ["Offeh", "Johnson", "Arku", "Aro", "Akinyoola", "Ogunnowo", "Ogunnike", "Dare", "Brayan", "Ogabi"]
+    names = ["Fawaz", "Samuel", "Chidera", "David", "Emmanuel",
+             "Feranmi", "Grace", "Zainab", "Deborah", "Faith"]
+    surnames = ["Offeh", "Johnson", "Arku", "Aro", "Akinyoola",
+                "Ogunnowo", "Ogunnike", "Dare", "Brayan", "Ogabi"]
     faculties = list(college.faculties.keys())
     faculty = random.choice(faculties)
-    department = random.choice(list(college.faculties[faculty].departments.keys()))
-    
+    department = random.choice(
+        list(college.faculties[faculty].departments.keys()))
+
     name = f"{random.choice(names)} {random.choice(surnames)}"
     age = random.randint(16, 28)
     gender = random.choice(["Male", "Female"])
     date_of_birth = date.today() - timedelta(days=age*365 + random.randint(0, 365))
     email = f"{name.lower().replace(' ', '.')}@lasu.edu"
-    phone_number = f"+234-{random.randint(70, 90):03d}-{random.randint(100, 999):03d}-{random.randint(1000, 9999):04d}"
-    LGA = f"{random.choice(['Lagos Island', 'Surulere', 'Oshodi', 'Munshin', 'Iyana Ipaja'])}"
-    state = f"{random.choice(['Lagos', 'Ogun', 'Oyo', 'Delta', 'Kwara', 'Kano', 'Kogi', 'Anambra'])} state"
+    phone_number = f"+234-{random.randint(70, 90):03d}-{random.randint(100, 999):03d}-{
+        random.randint(1000, 9999):04d}"
+    LGA = f"{random.choice(
+        ['Lagos Island', 'Surulere', 'Oshodi', 'Munshin', 'Iyana Ipaja'])}"
+    state = f"{random.choice(
+        ['Lagos', 'Ogun', 'Oyo', 'Delta', 'Kwara', 'Kano', 'Kogi', 'Anambra'])} state"
     admission_date = date.today() - timedelta(days=random.randint(0, 1000))
 
     if faculty == "Law":
@@ -96,13 +114,14 @@ def generate_student(college: College) -> Student:
 
     department_obj = college.get_department(faculty, department)
     if department_obj and level in department_obj.courses:
-        courses = {course: round(random.uniform(0, 5.0), 2) for course in random.sample(department_obj.courses[level], 5)}
+        courses = {course: round(random.uniform(0, 5.0), 2) for course in random.sample(
+            department_obj.courses[level], 5)}
     else:
         courses = {}
-    
+
     # Calculate GPA
     gpa = round(sum(courses.values()) / len(courses), 2) if courses else 0.0
-    
+
     return Student(
         student_id=student_id,
         name=name,
@@ -120,6 +139,7 @@ def generate_student(college: College) -> Student:
         gpa=gpa,
         courses=courses
     )
+
 
 def initialize_college() -> College:
     college = College("Sample College")
@@ -141,13 +161,16 @@ def initialize_college() -> College:
 
     return college
 
+
 def distribute_students(college: College, num_students: int) -> None:
     for i in range(num_students):
         student = generate_student(college, f"S{i+1:03d}")
-        department = college.get_department(student.faculty, student.department)
+        department = college.get_department(
+            student.faculty, student.department)
         if department:
             department.students.append(student)
             college.total_students += 1
+
 
 def print_college_statistics(college: College) -> None:
     print(f"College: {college.name}")
@@ -155,7 +178,8 @@ def print_college_statistics(college: College) -> None:
     for faculty_name, faculty in college.faculties.items():
         print(f"\nFaculty: {faculty_name}")
         for dept_name, department in faculty.departments.items():
-            print(f"  Department: {dept_name}, Students: {len(department.students)}")
+            print(f"  Department: {dept_name}, Students: {
+                  len(department.students)}")
 
 
 def cluster_students_by_department(college: College) -> None:
@@ -171,18 +195,18 @@ def cluster_students_by_department(college: College) -> None:
         print(f"\n{'-'*50}")
         print(f"Department: {dept_name}")
         print(f"Number of students: {len(students)}")
-        
+
         if students:
             avg_gpa = mean(student.gpa for student in students)
             print(f"Average GPA: {avg_gpa:.2f}")
-            
+
             level_distribution = defaultdict(int)
             for student in students:
                 level_distribution[student.level] += 1
             print("Level distribution:")
             for level, count in sorted(level_distribution.items()):
                 print(f"  Level {level}: {count} students")
-            
+
             print("\nSample students:")
             for i, student in enumerate(random.sample(students, min(3, len(students))), 1):
                 print(f"\n  Student {i}:")
@@ -193,8 +217,9 @@ def cluster_students_by_department(college: College) -> None:
                 print("    Courses:")
                 for course, score in student.courses.items():
                     print(f"      {course}: {score:.2f}")
-        
+
         print(f"{'-'*50}")
+
 
 def print_all_student_data(students: List[Student]) -> None:
     for student in students:
@@ -214,22 +239,25 @@ def print_all_student_data(students: List[Student]) -> None:
         print(f"GPA: {student.gpa}")
         print("Courses and Scores:")
         for course, score in student.courses.items():
-            print(f"  {course}: {score}")        
+            print(f"  {course}: {score}")
         print("-" * 50)
+
 
 def main() -> None:
     college = initialize_college()
     all_students = []
-    
+
     for i in range(100):
         student = generate_student(college)
-        department = college.get_department(student.faculty, student.department)
+        department = college.get_department(
+            student.faculty, student.department)
         if department:
             department.students.append(student)
             college.total_students += 1
             all_students.append(student)
-    
+
     cluster_students_by_department(college)
+
 
 if __name__ == "__main__":
     main()
